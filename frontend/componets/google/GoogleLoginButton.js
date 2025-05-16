@@ -1,50 +1,62 @@
 'use client';
 
-import React from "react";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import { useRouter } from "next/navigation";
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@/componets/store/ContexApi';
+import { FcGoogle } from 'react-icons/fc';
 
-const GoogleLoginButton = () => {
+export default function CustomGoogleLogin() {
   const router = useRouter();
+  const { setUsername } = useUser();
 
-  const handleSuccess = async (credentialResponse) => {
-    try {
-      const res = await fetch("http://localhost:8000/auth/google_auth/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: credentialResponse.credential }),
-      });
+  useEffect(() => {
+    window.google?.accounts.id.initialize({
+      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+      callback: async (response) => {
+        try {
+          const res = await fetch("http://localhost:8000/auth/google_auth/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: response.credential }),
+          });
 
-      if (!res.ok) {
-        throw new Error("Failed to authenticate with Google");
-      }
+          if (!res.ok) throw new Error("Google auth failed");
+          const data = await res.json();
 
-      const data = await res.json();
-      console.log("✅ Login Success:", data);
+          localStorage.setItem("access_token", data.access_token);
+          localStorage.setItem("refresh_token", data.refresh_token);
+          localStorage.setItem("user_email", data.email);
+          localStorage.setItem("username", data.username);
 
-      // שמירת ה־JWT ב־localStorage
-      localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem("refresh_token", data.refresh_token);
-      localStorage.setItem("user_email", data.email);
-      localStorage.setItem("username", data.username);
+          setUsername(data.username);
+          router.push("/start-trip");
+        } catch (err) {
+          console.error("Login error:", err);
+          alert("Google login failed.");
+        }
+      },
+    });
+  }, []);
 
-      console.log()
-      router.push("/"); // או כל דף אחר באתר שלך
-    } catch (err) {
-      console.error("❌ Google login error:", err);
-      alert("Google login failed.");
-    }
-  };
-
-  const handleFailure = () => {
-    alert("Google login was unsuccessful.");
+  // כפתור מותאם
+  const handleGoogleClick = () => {
+    window.google?.accounts.id.prompt(); // יפתח את popup ההתחברות
   };
 
   return (
-    <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
-      <GoogleLogin onSuccess={handleSuccess} onError={handleFailure} />
-    </GoogleOAuthProvider>
+    <button
+      onClick={handleGoogleClick}
+      style={{
+        backgroundColor: '#fff',
+        border: '1px solid #ccc',
+        padding: '2px 8px',
+        borderRadius: '999px',
+        cursor: 'pointer',
+        fontWeight: 'bold',
+        marginLeft : '100px',
+      }}
+    >
+        <FcGoogle size={30} style={{ marginLeft: '0px' , padding: '0' }} />
+    </button>
   );
-};
-
-export default GoogleLoginButton;
+}

@@ -3,4 +3,4 @@ from .models import Trip
 
 @admin.register(Trip)
 class TripAdmin(admin.ModelAdmin):
-    list_display = ('username','email','destination','preferences', 'start_date', 'end_date', 'budget' , 'places','weather' , 'itinerary')
+    list_display = ('username','email','destination','start_date', 'end_date', 'budget' , 'places','weather' , 'itinerary')

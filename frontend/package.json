@@ -10,14 +10,18 @@
   },
   "dependencies": {
     "@react-oauth/google": "^0.12.2",
+    "leaflet": "^1.9.4",
     "next": "15.3.2",
     "openai": "^4.98.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-icons": "^5.5.0",
+    "react-leaflet": "^5.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "eslint": "^9",
-    "eslint-config-next": "15.3.2"
+    "eslint-config-next": "15.3.2",
+    "url-loader": "^4.1.1"
   }
 }

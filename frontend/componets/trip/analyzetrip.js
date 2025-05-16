@@ -4,42 +4,67 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY, 
 });
 
-export async function analyzeTripIntent(preferencesText, destination) {
-    console.log("Loaded key:", process.env.OPENAI_API_KEY);
-    const prompt = `
-You are a professional travel assistant. A user is planning a trip to ${destination}.
+export async function analyzeTripIntent(preferences, destination, weather, startDate, endDate) {
+  if (!preferences || !destination || !startDate || !endDate) {
+    console.log("messing one of the elements");
+    return [];
+  }
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const numDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
-Based on their preferences below, recommend **a curated list of 5–7 specific tourist attractions, landmarks, or hidden gems** that are **highly recommended** and **unique to ${destination}**.
+  const weatherDescription = weather?.description?.toLowerCase() || 'clear';
 
-Avoid general terms like "museum", "restaurant", or "beach" — instead, list **real places** with proper names (e.g., "Eiffel Tower", "Casa Batlló", "Montmartre", "Bunkers del Carmel"). You may include cultural districts, scenic viewpoints, historical landmarks, or vibrant neighborhoods.
+  const badWeather = ['rain', 'snow', 'storm', 'thunder', 'shower'].some(w =>
+    weatherDescription.includes(w)
+  );
 
-Make sure the attractions are aligned with the user's travel style.
+  const weatherText = badWeather
+    ? `The weather is expected to be bad (${weatherDescription}), so avoid outdoor places like beaches, open parks, or hikes. Focus on indoor attractions such as museums, historic buildings, covered markets, or galleries.`
+    : `The weather is expected to be good (${weatherDescription}), so you may include outdoor attractions such as scenic lookouts, nature parks, waterfront walks, or open-air monuments.`;
 
-User preferences: "${preferencesText}"
+  const prompt = `
+You are a professional travel assistant. A user is planning a ${numDays}-day trip to ${destination}.
+The weather is: ${weatherDescription}.
+User travel preferences: "${preferences}"
 
-Return the response **only** as a valid JSON array of strings. Example:
-["Eiffel Tower", "Montmartre", "Seine River Cruise", "Saint-Germain-des-Prés", "Palace of Versailles", "Musée d'Orsay", "Luxembourg Gardens"]
-`;
+${weatherText}
 
-    
+Based on this, suggest a **curated list of 5–7 real, specific, and unique tourist attractions, landmarks, or hidden gems in ${destination}** that match the user's style and are worth visiting and also for every day give me good restaurant.
 
-    const response = await openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          { role: 'system', content: 'You are a travel planner assistant.' },
-          { role: 'user', content: prompt },
-        ],
-        temperature: 0.6,
-        max_tokens: 100,
-      });
-      
+Avoid general terms like "museum", "restaurant", or "beach" — instead, list real place names (e.g., "Eiffel Tower", "Casa Batlló", "Montmartre", "Bunkers del Carmel").
+
+Avoid duplicates. Prioritize interesting, top-rated, culturally rich, or locally loved places.
+
+Return the result **only** as a valid JSON array of strings AND RETURN THE EXACT REAL PKACES OF THE DESTINATION DO NOT RETURN AN OBJECT RETURN ME JUST AN ARRAY OF STRINGS!!`;
+
+  const response = await openai.chat.completions.create({
+    model: 'gpt-3.5-turbo',
+    messages: [
+      { role: 'system', content: 'You are a travel planner assistant.' },
+      { role: 'user', content: prompt },
+    ],
+    temperature: 0.6,
+    max_tokens: 800,
+  });
 
   const content = response.choices[0].message.content;
 
+  const cleaned = content
+    .replace(/^```json\s*/i, '')
+    .replace(/```$/, '')
+    .trim();
+
   try {
-    return JSON.parse(content); // הופך את התשובה לרשימה
+    const places = JSON.parse(cleaned);
+    if (Array.isArray(places)) {
+      return places;
+    } else {
+      console.error(" LLM response was not an array:", places);
+      return [];
+    }
   } catch (e) {
-    console.error("Failed to parse LLM response:", content);
+    console.error(" Failed to parse LLM response:", content);
     return [];
   }
 }

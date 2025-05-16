@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import NavBar from "../componets/navbar";
-import { UserProvider } from "@/componets/google/AuthUser";
+import { UserProvider } from "@/componets/store/ContexApi";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -19,6 +20,14 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        {/* ✅ טוען את Google Identity API */}
+        <script
+          src="https://accounts.google.com/gsi/client"
+          async
+          defer
+        ></script>
+      </head>
       <body>
         <UserProvider>
           <NavBar />

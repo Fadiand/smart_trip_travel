@@ -1,5 +1,3 @@
-// AuthUser.jsx
-
 'use client';
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -7,6 +5,7 @@ const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const [username, setUsername] = useState(null);
+  const [email, setEmail] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -19,9 +18,8 @@ export const UserProvider = ({ children }) => {
     })
       .then(res => res.json())
       .then(data => {
-        if (data.username) {
-          setUsername(data.username);
-        }
+        if (data.username) setUsername(data.username);
+        if (data.email) setEmail(data.email);
       })
       .catch(err => console.error("❌ Error fetching user info:", err));
   }, []);
@@ -32,10 +30,11 @@ export const UserProvider = ({ children }) => {
     localStorage.removeItem("user_email");
     localStorage.removeItem("username");
     setUsername(null);
+    setEmail(null);
   };
 
   return (
-    <UserContext.Provider value={{ username, setUsername, logout }}>
+    <UserContext.Provider value={{ username, email, setUsername, setEmail, logout }}>
       {children}
     </UserContext.Provider>
   );

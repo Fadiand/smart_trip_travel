@@ -3,7 +3,7 @@
 import { analyzeTripIntent } from "@/componets/trip/analyzetrip";
 import { searchPlacesByTags } from '@/componets/trip/searchplaces';
 import { getWeather } from '@/componets/trip/getweather';
-
+import generateDailyItinerary from '@/componets/result/generateDailyItinerary';
 
 export async function createTrip(formData) {
   const tripData = {
@@ -12,16 +12,20 @@ export async function createTrip(formData) {
     endDate: formData.get('endDate'),
     preferences: formData.get('preferences'),
     budget: formData.get('budget'),
+    username: formData.get('username'),
+    email: formData.get('email'),
   };
 
-  const tags = await analyzeTripIntent(tripData.destination, tripData.preferences);
-  const places = await searchPlacesByTags(tags, tripData.destination);
   const weather = await getWeather(tripData.destination);
+  if (!weather) {
+    throw new Error("Failed to get the weather");
+  }
+  const tags = await analyzeTripIntent(tripData.destination, tripData.preferences, weather, tripData.startDate , tripData.endDate);
+  const tagsWithPlaces = await searchPlacesByTags(tags, tripData.destination);
 
-  console.log(places);
-  console.log(tags);
-  console.log(tripData);
+  const flatPlaces = tagsWithPlaces.flatMap(tag => tag.places);
 
+  const itinerary = generateDailyItinerary(flatPlaces, tripData.startDate, tripData.endDate, weather);
 
   const response = await fetch('http://localhost:8000/trip/create/', {
     method: 'POST',
@@ -31,11 +35,10 @@ export async function createTrip(formData) {
     body: JSON.stringify({
       ...tripData,
       tags,
-      places,
+      places: flatPlaces,
       weather,
-      itinerary: [],
+      itinerary
     })
-    
   });
 
   if (!response.ok) {
@@ -43,17 +46,16 @@ export async function createTrip(formData) {
     console.error("Server error:", errorText);
     throw new Error("Failed to save trip");
   }
-  
+
   const data = await response.json();
   console.log(data);
 
-  // החזרה ל־useFormState (הודעת הצלחה)
   return {
     ...tripData,
     tags,
-    places,
+    places: flatPlaces,
     weather,
+    itinerary,
     success: true
   };
-  
 }

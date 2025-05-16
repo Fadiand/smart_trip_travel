@@ -1,13 +1,17 @@
 from django.db import models
 from django.contrib.postgres.fields import JSONField  
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
 
 class Trip(models.Model):
-    username = models.CharField(max_length=100, null = True)
-    email = models.CharField(max_length=100 , null = True)
+    username = models.CharField(max_length=100)
+    email = models.CharField(max_length=100 )
     destination = models.CharField(max_length=100)
     start_date = models.DateField()
     end_date = models.DateField()
-    preferences = models.TextField()
+    preferences = models.CharField(max_length=255, null=True, blank=True)
     budget = models.IntegerField(null=True, blank=True)
 
     places = models.JSONField(null=True)     

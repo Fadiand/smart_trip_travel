@@ -10,6 +10,7 @@ import json
 from datetime import date
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 User = get_user_model()
 
@@ -64,19 +65,6 @@ def google_auth(request):
         if not created:
             user.username = name
             user.save()
-
-        # יצירת Trip ריק עבור משתמש חדש
-        Trip.objects.get_or_create(
-            email=email,
-            username=name,
-            destination='',
-            start_date=date.today(),
-            end_date=date.today(),
-            preferences='',
-            weather={},
-            places=[],
-            itinerary=[]
-        )
 
         tokens = generate_jwt_for_user(user)
 
