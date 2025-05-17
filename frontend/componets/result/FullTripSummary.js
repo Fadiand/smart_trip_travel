@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useUser } from '@/componets/store/ContexApi';
 import dynamic from 'next/dynamic';
+import DifferentTripButton from './DifferentTripButton';
 
 const MapView = dynamic(() => import('@/componets/map/viewmap'), {
   ssr: false
@@ -91,7 +92,7 @@ export default function FullTripSummary() {
                           rel="noopener noreferrer"
                           className="map-link"
                         >
-                          📍 View on Google Maps
+                           View on Google Maps
                         </a>
                       </>
                     )}
@@ -111,6 +112,7 @@ export default function FullTripSummary() {
 
         {showMap && <MapView destination={destination} places={places} />}
       </div>
+     <DifferentTripButton />
     </div>
   );
 }

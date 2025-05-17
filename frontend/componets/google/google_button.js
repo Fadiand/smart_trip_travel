@@ -10,7 +10,7 @@ export default function GoogleButton() {
     <li>
       {username ? (
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <h3 style={{ color: "white" , marginBottom : '24px' }}>Hi, {username}</h3>
+          <h3 style={{ color: "white" , marginBottom : '17px' }}>Hi, {username}</h3>
           <button onClick={logout} style={{
             background: "#ef4444",
             border: "none",
@@ -18,7 +18,7 @@ export default function GoogleButton() {
             padding: "0.4rem 0.8rem",
             borderRadius: "6px",
             cursor: "pointer",
-            marginBottom: '24px',
+            marginBottom: '17px',
             marginRight: '10px',
           }}>
             Logout

@@ -21,9 +21,9 @@ export default function StartTrip() {
 
     try {
       await createTrip(formData);
-      router.push('/result'); // ✅ ניווט אוטומטי
+      router.push('/result'); 
     } catch (err) {
-      console.error("❌ Trip creation failed:", err);
+      console.error("Trip creation failed:", err);
       alert("Something went wrong...");
     } finally {
       setLoading(false);
@@ -32,37 +32,43 @@ export default function StartTrip() {
 
   return (
     <main className="start-page">
-      <h1>Plan Your Perfect Trip</h1>
+      {loading ? (
+        <div className="loader">Loading...</div>
+      ) : (
+        <>
+          <h1>Plan Your Perfect Trip</h1>
 
-      <form className="trip-form" onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Destination</label>
-          <input type="text" name="destination" required />
-        </div>
+          <form className="trip-form" onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Destination</label>
+              <input type="text" name="destination" required />
+            </div>
 
-        <div className="form-row">
-          <div className="form-group">
-            <label>Start Date</label>
-            <input type="date" name="startDate" required />
-          </div>
-          <div className="form-group">
-            <label>End Date</label>
-            <input type="date" name="endDate" required />
-          </div>
-        </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Start Date</label>
+                <input type="date" name="startDate" required />
+              </div>
+              <div className="form-group">
+                <label>End Date</label>
+                <input type="date" name="endDate" required />
+              </div>
+            </div>
 
-        <div className="form-group">
-          <label>Trip Style</label>
-          <input type="text" name="preferences" placeholder="Romantic, Adventure..." />
-        </div>
+            <div className="form-group">
+              <label>Trip Style</label>
+              <input type="text" name="preferences" placeholder="Romantic, Adventure..." />
+            </div>
 
-        <div className="form-group">
-          <label>Budget (€)</label>
-          <input type="number" name="budget" placeholder="Optional" />
-        </div>
+            <div className="form-group">
+              <label>Budget ($)</label>
+              <input type="number" name="budget" placeholder="Optional" />
+            </div>
 
-        <StartButton loading={loading} />
-      </form>
+            <StartButton loading={loading} />
+          </form>
+        </>
+      )}
     </main>
   );
 }

@@ -24,7 +24,7 @@ export default function Navbar() {
 const styles = {
   nav: {
     background: '#0f172a',
-    padding: '15px',
+    padding: '5px',
     position: 'sticky',
     top: 0,
     zIndex: 999,

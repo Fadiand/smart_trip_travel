@@ -376,6 +376,63 @@ h1 {
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(52, 152, 219, 0.4);
   }
+
+  /*Different trip style!!!! that conected to the fuuultrip!!!!!!!!!!!1*/
+  .new-trip{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .new-trip .diff-trip {
+    margin-left: 5px;
+    margin-top: 2px;
+    padding-left: 10px;
+    background-color: #3498db;
+    border-radius: 10px;
+    color: white;
+    border: none;
+    padding: 8px 8px;
+    cursor: pointer;
+  }
+  .modal-overlay{
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  @keyframes popup {
+    0% {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    animation: popup 0.3s ease-out;
+  }
+  
+  .modal-buttons button {
+    margin: 10px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+  }
   
   /* Responsive adjustments */
   @media (max-width: 768px) {
@@ -429,5 +486,19 @@ h1 {
   .googleButton:hover {
     background-color: #f2f2f2;
     border-color: #999;
+  }
+  
+
+
+  .start-page .loader {
+    font-size: 1.5rem;
+    text-align: center;
+    animation: pulse 1s infinite;
+  }
+  
+  @keyframes pulse {
+    0% { opacity: 0.4; }
+    50% { opacity: 1; }
+    100% { opacity: 0.4; }
   }
   
