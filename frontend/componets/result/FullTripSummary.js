@@ -5,23 +5,24 @@ import { useUser } from '@/componets/store/ContexApi';
 import dynamic from 'next/dynamic';
 import DifferentTripButton from './DifferentTripButton';
 
-const MapView = dynamic(() => import('@/componets/map/viewmap'), {
-  ssr: false
-});
+const MapView = dynamic(() => import('@/componets/map/viewmap'), { ssr: false });
 
 export default function FullTripSummary() {
   const { username } = useUser();
   const [tripData, setTripData] = useState(null);
   const [showMap, setShowMap] = useState(false);
+  const [showDayMaps, setShowDayMaps] = useState([]);
 
+  // ✅ קודם שולף tripData לפי username
   useEffect(() => {
     if (!username) return;
 
     fetch(`http://localhost:8000/trip/by-username?username=${username}`)
-      .then(res => res.json())
+      .then(res => res.json())  
       .then(data => {
         if (data.success) {
           setTripData(data);
+          setShowDayMaps(new Array(data.itinerary?.length || 0).fill(false));
         } else {
           console.error("Trip not found:", data.error);
         }
@@ -29,10 +30,32 @@ export default function FullTripSummary() {
       .catch(err => console.error("Error fetching trip:", err));
   }, [username]);
 
+  // ✅ ואז, כשיש tripData – מייצא אותו ל־backend
+  useEffect(() => {
+    if (tripData) {
+      fetch('http://localhost:8000/trip/export/trip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tripData)
+      });
+    }
+  }, [tripData]);
+
+  // ❗ עכשיו מותר לשים return
   if (!tripData) return <p>Loading your trip details...</p>;
 
   const { destination, startDate, endDate, weather, tags, places, preferences, itinerary } = tripData;
 
+  const toggleDayMap = (index) => {
+    setShowDayMaps(prev => {
+      const updated = [...prev];
+      updated[index] = !updated[index];
+      return updated;
+    });
+  };
+
+  const usedPlaces = itinerary?.flatMap(day => day.schedule) ?? [];
+  
   return (
     <div className="full-trip-summary">
       <h1 className="trip-title">Trip to {destination.charAt(0).toUpperCase() + destination.slice(1)}</h1>
@@ -60,7 +83,7 @@ export default function FullTripSummary() {
       )}
 
       <div className="places-grid">
-        {places.map((place, idx) => (
+        {usedPlaces.map((place, idx) => (
           <div className="place-card" key={idx}>
             <h4>{place.name}</h4>
             <p>{place.address}</p>
@@ -92,7 +115,7 @@ export default function FullTripSummary() {
                           rel="noopener noreferrer"
                           className="map-link"
                         >
-                           View on Google Maps
+                          View on Google Maps
                         </a>
                       </>
                     )}
@@ -100,6 +123,16 @@ export default function FullTripSummary() {
                   </li>
                 ))}
               </ul>
+
+              <button className="show-map-btn" onClick={() => toggleDayMap(i)}>
+                {showDayMaps[i] ? 'Hide Day Map 📍' : 'Show Day Map 📍'}
+              </button>
+
+              {showDayMaps[i] && (
+                <div className="map-wrapper">
+                  <MapView destination={destination} places={day.schedule} />
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -110,9 +143,10 @@ export default function FullTripSummary() {
           {showMap ? 'Hide Map 📍' : 'Show Map 📍'}
         </button>
 
-        {showMap && <MapView destination={destination} places={places} />}
+        {showMap && <MapView destination={destination} places={usedPlaces} />}
       </div>
-     <DifferentTripButton />
+
+      <DifferentTripButton />
     </div>
   );
 }

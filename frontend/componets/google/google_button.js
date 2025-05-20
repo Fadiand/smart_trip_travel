@@ -7,10 +7,10 @@ export default function GoogleButton() {
   const { username, logout } = useUser();
 
   return (
-    <li>
+    <li style={{listStyle:'none'}}>
       {username ? (
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <h3 style={{ color: "white" , marginBottom : '17px' }}>Hi, {username}</h3>
+          <h3 style={{ color: "#dbdada" , marginBottom : '17px' }}>Hi, {username}</h3>
           <button onClick={logout} style={{
             background: "#ef4444",
             border: "none",
@@ -20,6 +20,7 @@ export default function GoogleButton() {
             cursor: "pointer",
             marginBottom: '17px',
             marginRight: '10px',
+            textDecorationStyle: 'none',
           }}>
             Logout
           </button>

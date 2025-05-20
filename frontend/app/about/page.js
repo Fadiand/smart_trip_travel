@@ -15,7 +15,7 @@ export default function About() {
           <p>Get travel suggestions based on your interests, budget, and time of year.</p>
         </div>
         <div className="feature">
-          <h2> Real-Time Weather Check</h2>
+          <h2>Real-Time Weather </h2>
           <p>We consider current and forecasted weather to make your trip comfortable and fun.</p>
         </div>
         <div className="feature">

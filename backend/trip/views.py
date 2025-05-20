@@ -4,7 +4,11 @@ from rest_framework import status
 from .models import Trip
 import json
 from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import os
+import requests
 
+GOOGLE_API_KEY = "AIzaSyDDAqLQIjmAAOl3AqQrolB7y6v3JoFbfow"
 
 
 @api_view(['POST'])
@@ -71,3 +75,55 @@ def get_trip_by_username(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+# 📷 שליפת photo_reference לפי שם + כתובת
+@csrf_exempt
+def fetch_photo_reference(name, address):
+    query = f"{name}, {address}"
+    url = (
+        f"https://maps.googleapis.com/maps/api/place/findplacefromtext/json"
+        f"?input={query}&inputtype=textquery"
+        f"&fields=photos"
+        f"&key={GOOGLE_API_KEY}"
+    )
+    res = requests.get(url)
+    if res.status_code != 200:
+        print(f"❌ Error from Google API for {name}: {res.status_code}")
+        return None
+
+    data = res.json()
+    candidates = data.get("candidates", [])
+    if candidates and "photos" in candidates[0]:
+        return candidates[0]["photos"][0].get("photo_reference")
+    return None
+
+#@csrf_exempt
+@csrf_exempt
+def export_trip(request):
+    if request.method == "POST":
+        print("📥 Received trip export request!")
+        trip_data = json.loads(request.body)
+
+        export_path = os.path.join("..", "remotion_data", "trip.json")
+        abs_path = os.path.abspath(export_path)
+        print(f"📝 Will write to: {abs_path}")
+
+        os.makedirs(os.path.dirname(export_path), exist_ok=True)
+
+        for day in trip_data.get("itinerary", []):
+            for place in day.get("schedule", []):
+                if "photo_reference" not in place and "address" in place:
+                    ref = fetch_photo_reference(place["name"], place["address"])
+                    if ref:
+                        place["photo_reference"] = ref
+
+        with open(export_path, "w", encoding="utf-8") as f:
+            json.dump(trip_data, f, indent=2)
+
+        print("✅ trip.json saved successfully.")
+        return JsonResponse({"success": True})
+    
+    # ✅ במקרה שלא POST – החזר תגובה ברורה
+    return JsonResponse({"error": "Only POST method is allowed"}, status=405)

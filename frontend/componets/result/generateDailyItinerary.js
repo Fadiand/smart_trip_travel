@@ -1,8 +1,29 @@
+import {
+  calculateDistanceKm,
+  buildDistanceMatrix,
+  findBestStartingIndex,
+  buildGreedyPath
+} from "@/utils/distanceUtils";
+
 export default function generateDailyItinerary(places, startDate, endDate, weather) {
   const itinerary = [];
   const numDays = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
 
-  const placesPerDay = Math.ceil(places.length / numDays);
+  // 🧠 שלב 0: סינון כפילויות לפי שם
+  const uniquePlacesMap = new Map();
+  places.forEach(p => {
+    if (!uniquePlacesMap.has(p.name)) {
+      uniquePlacesMap.set(p.name, p);
+    }
+  });
+  const uniquePlaces = Array.from(uniquePlacesMap.values());
+
+  // 📍 שלב 1–4: סידור לפי מסלול מינימלי
+  const distanceMatrix = buildDistanceMatrix(uniquePlaces);
+  const startIndex = findBestStartingIndex(distanceMatrix);
+  const bestPathIndexes = buildGreedyPath(distanceMatrix, startIndex);
+  const sortedPlaces = bestPathIndexes.map(i => uniquePlaces[i]);
+
   let placeIndex = 0;
 
   for (let day = 0; day < numDays; day++) {
@@ -10,15 +31,18 @@ export default function generateDailyItinerary(places, startDate, endDate, weath
     const dateStr = date.toISOString().split("T")[0];
 
     const schedule = [];
-    let currentTime = 9 * 60; // 09:00 in minutes
+    let currentTime = 9 * 60; // 09:00
 
-    for (let i = 0; i < placesPerDay && placeIndex < places.length; i++) {
-      const place = places[placeIndex++];
-      const duration = place.duration || (place.type === 'restaurant' ? 60 : 90); // מסעדות 60 דק
+    while (placeIndex < sortedPlaces.length) {
+      const place = sortedPlaces[placeIndex];
+      const duration = place.duration || (place.type === 'restaurant' ? 60 : 90);
+
+      if (currentTime + duration > 17 * 60) break; // אל תחרוג מ־17:00
+
       const startHour = Math.floor(currentTime / 60).toString().padStart(2, "0");
       const startMin = (currentTime % 60).toString().padStart(2, "0");
 
-      currentTime += duration + 30; // Add 30 min buffer
+      currentTime += duration + 30; // +30 דקות מרווח
 
       const endHour = Math.floor(currentTime / 60).toString().padStart(2, "0");
       const endMin = (currentTime % 60).toString().padStart(2, "0");
@@ -32,10 +56,12 @@ export default function generateDailyItinerary(places, startDate, endDate, weath
         endTime: `${endHour}:${endMin}`,
         duration,
         type: place.type || "general",
-        weatherSuitable: weather?.description?.toLowerCase().includes("rain") 
-          ? (place.indoor ?? false) 
+        weatherSuitable: weather?.description?.toLowerCase().includes("rain")
+          ? (place.indoor ?? false)
           : true
       });
+
+      placeIndex++;
     }
 
     itinerary.push({

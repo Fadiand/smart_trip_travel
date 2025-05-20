@@ -2,6 +2,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import NavBar from "../componets/navbar";
 import { UserProvider } from "@/componets/store/ContexApi";
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import Chatbot from "@/componets/chatBot/Chatbot";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,7 +28,8 @@ export default function RootLayout({ children }) {
       <body>
         <UserProvider>
           <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
-          <NavBar />
+            <NavBar />
+            <Chatbot />
           {children}
         </GoogleOAuthProvider>
         </UserProvider>

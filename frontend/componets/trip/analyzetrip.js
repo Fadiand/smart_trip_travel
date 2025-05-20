@@ -12,6 +12,8 @@ export async function analyzeTripIntent(preferences, destination, weather, start
   const start = new Date(startDate);
   const end = new Date(endDate);
   const numDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+  const maxPlaces = numDays * 5;
+
 
   const weatherDescription = weather?.description?.toLowerCase() || 'clear';
 
@@ -23,21 +25,23 @@ export async function analyzeTripIntent(preferences, destination, weather, start
     ? `The weather is expected to be bad (${weatherDescription}), so avoid outdoor places like beaches, open parks, or hikes. Focus on indoor attractions such as museums, historic buildings, covered markets, or galleries.`
     : `The weather is expected to be good (${weatherDescription}), so you may include outdoor attractions such as scenic lookouts, nature parks, waterfront walks, or open-air monuments.`;
 
-  const prompt = `
-You are a professional travel assistant. A user is planning a ${numDays}-day trip to ${destination}.
-The weather is: ${weatherDescription}.
-User travel preferences: "${preferences}"
-
-${weatherText}
-
-Based on this, suggest a **curated list of 5–7 real, specific, and unique tourist attractions, landmarks, or hidden gems in ${destination}** that match the user's style and are worth visiting and also for every day give me good restaurant.
-
-Avoid general terms like "museum", "restaurant", or "beach" — instead, list real place names (e.g., "Eiffel Tower", "Casa Batlló", "Montmartre", "Bunkers del Carmel").
-
-Avoid duplicates. Prioritize interesting, top-rated, culturally rich, or locally loved places.
-
-Return the result **only** as a valid JSON array of strings AND RETURN THE EXACT REAL PKACES OF THE DESTINATION DO NOT RETURN AN OBJECT RETURN ME JUST AN ARRAY OF STRINGS!!`;
-
+    const prompt = `
+    You are a professional travel assistant. A user is planning a ${numDays}-day trip to ${destination}.
+    The weather is: ${weatherDescription}.
+    User travel preferences: "${preferences}"
+    
+    ${weatherText}
+    
+    Based on this, suggest a **curated list of up to ${maxPlaces} real, specific, and unique tourist attractions, landmarks, or hidden gems in ${destination}** that match the user's style and are worth visiting. Also, include 1 great restaurant recommendation per day.
+    
+    Avoid general terms like "museum", "restaurant", or "beach" — instead, list real place names (e.g., "Eiffel Tower", "Casa Batlló", "Montmartre", "Bunkers del Carmel").
+    
+    Avoid duplicates  even if they are variants of the same place name. Prioritize interesting, top-rated, culturally rich, or locally loved places.
+    
+    
+    Return the result **only** as a valid JSON array of strings (no explanations, no extra formatting).
+    `;
+    
   const response = await openai.chat.completions.create({
     model: 'gpt-3.5-turbo',
     messages: [
