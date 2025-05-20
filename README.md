@@ -17,8 +17,9 @@ An AI-powered travel planner that creates personalized daily itineraries based o
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
-   cd YOUR_REPO_NAME
+   git clone https://github.com/Fadiand/smart_trip_travel.git
+   cd smart_trip_travel
+
    ```
 
 2. **Install all dependencies:**
