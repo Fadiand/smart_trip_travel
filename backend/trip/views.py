@@ -7,8 +7,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import os
 import requests
+from decouple import config
 
-GOOGLE_API_KEY = "AIzaSyDDAqLQIjmAAOl3AqQrolB7y6v3JoFbfow"
+GOOGLE_API_KEY = config('GOOGLE_API_KEY')
 
 
 @api_view(['POST'])
